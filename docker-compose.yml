@@ -1,0 +1,30 @@
+name: bda-mh-k3
+
+# Only Kafka runs in Docker (its image is multi-arch and native on Apple
+# Silicon). Hadoop runs natively via Homebrew -- see hadoop-conf/ and
+# run_pipeline.sh -- because Apache/bde2020 only publish amd64 Hadoop
+# images, which means full JVM emulation on ARM64 and startup times in the
+# tens of minutes per daemon. Producer/consumer/dashboard also run natively
+# (.venv) so they can reach native HDFS over plain localhost.
+
+services:
+  kafka:
+    image: apache/kafka:3.8.0
+    hostname: kafka
+    container_name: kafka
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://kafka:19092,CONTROLLER://kafka:19093,PLAINTEXT_HOST://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:19092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:19093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      CLUSTER_ID: "MkU3OEVBNTcwNTJENDM2Qk"
